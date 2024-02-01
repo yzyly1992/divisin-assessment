@@ -11,7 +11,7 @@ from PIL import Image
 from io import BytesIO
 import os
  
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./images')
 app.secret_key = "your_secret_key_xxx"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://divisin-user:divisin-pass@localhost/divisin'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -46,8 +46,6 @@ class Images(db.Model):
     def __init__(self,user_id,image):
         self.user_id=user_id
         target_dir = './images/'+user_id
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
         save_image_from_b64(image, target_dir)
         self.url = image['filename']
         self.id = str(uuid.uuid4())
@@ -77,6 +75,7 @@ def register():
     db.session.add(user)
     db.session.commit()
     session['user_id'] = user.id
+    os.makedirs('./images/'+user.id)
     return jsonify({'user_id': user.id}), 200
 
 # add route for /login to login a user
@@ -133,7 +132,8 @@ def addimages():
         db.session.commit()
     return jsonify({'status':True}), 200
 
-@app.route('/getimage',methods=['POST'])
+# add route for /getimage to get single image
+@app.route('/getimage',methods=['OPTIONS','POST'])
 @cross_origin(supports_credentials=True)
 def getimage():
     user_id = request.json['user_id']
@@ -141,7 +141,7 @@ def getimage():
     if 'user_id' not in session or session['user_id'] != user_id:
         return jsonify(message='Unauthorized access'), 401
     image = Images.query.get(image_id)
-    return send_from_directory('./images/'+user_id, image.url)
+    return send_from_directory('./images/'+user_id, image.url), 200
 
 # add route for /deleteimage to delete an image
 @app.route('/deleteimage',methods=['POST'])
@@ -157,6 +157,7 @@ def deleteimage():
     os.remove('./images/'+user_id+'/'+image.url)
     return jsonify({'status':True}), 200
 
+# save image from base64 data
 def save_image_from_b64(image, path):
     base64_image_data = image["data_url"].split(',')[1]
     image_binary = base64.b64decode(base64_image_data)
@@ -165,4 +166,6 @@ def save_image_from_b64(image, path):
     image_file.save(path+'/'+ image_name)
  
 if __name__=='__main__':
+    if not os.path.exists('./images'):
+        os.makedirs('./images')
     app.run(port=5000, debug=True, host='0.0.0.0')
