@@ -1,0 +1,31 @@
+.managerContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.topRight {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.relative {
+    position: relative;
+}
+
+.hairline {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    width: 400px;
+}
+
+.warnText {
+    color: gray;
+    margin: 0;
+    padding: 0;
+}

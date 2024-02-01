@@ -1,0 +1,11 @@
+.stockImage {
+    object-fit: contain;
+    width: 200px;
+    aspect-ratio: 1/1;
+}
+
+@media (max-width: 670px) {
+    .stockImage {
+        width: 400px;
+    }
+}
